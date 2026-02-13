@@ -1,118 +1,147 @@
-# Requirements Document
+# Requirements Document: Video Translation
 
 ## Introduction
 
-User story (plain): As a viewer I want to watch videos in my native language so I can understand content easily.
-
-The Video Translation System is an AI-powered web application designed to make video content accessible across language barriers. The system accepts video files with subtitles, translates them into multiple languages using AI, and optionally generates synchronized audio using text-to-speech technology. This enables users to experience the same video content in different languages, supporting media accessibility, content localization, and enhanced digital experiences.
+The Video Translation system is an AI-powered web application that enables users to translate video subtitles into multiple languages and optionally generate synchronized audio using text-to-speech technology. The system aims to improve media accessibility and support content localization for global audiences.
 
 ## Glossary
 
-- **Video_Translation_System**: The complete web application that handles video upload, subtitle processing, translation, and playback
-- **Subtitle_Processor**: Component responsible for extracting and parsing subtitle data from various formats
-- **Translation_Engine**: AI-powered service that translates text from one language to another
-- **TTS_Generator**: Text-to-speech component that converts translated text into synchronized audio
-- **Media_Player**: Web-based video player that displays translated content
-- **User**: Person using the application to translate and view video content
+- **Video_Translation_System**: The complete web application including frontend, backend, and AI integration components
+- **Subtitle_Extractor**: Component responsible for extracting subtitle data from video files or external subtitle files
+- **Translation_Engine**: AI-powered component that translates subtitle text between languages
+- **TTS_Generator**: Text-to-speech component that generates audio from translated text
+- **Audio_Synchronizer**: Component that aligns generated audio with video timing
+- **Video_Player**: Component that displays video with selected subtitle track and audio
+- **User**: Person interacting with the web application
+- **Source_Language**: The original language of the video subtitles
+- **Target_Language**: The language into which subtitles are being translated
+- **Subtitle_Track**: A complete set of timed subtitle entries for a specific language
+- **SRT_File**: SubRip subtitle file format (.srt)
+- **VTT_File**: WebVTT subtitle file format (.vtt)
+- **Embedded_Subtitles**: Subtitle data contained within the video file container
 
 ## Requirements
 
-### Requirement 1: Video Upload and Processing
+### Requirement 1: Video and Subtitle Upload
 
-**User Story:** As a content creator, I want to upload video files with subtitles, so that I can make my content accessible in multiple languages.
-
-#### Acceptance Criteria
-
-1. WHEN a user uploads a video file, THE Video_Translation_System SHALL accept common video formats (MP4, AVI, MOV, WebM)
-2. WHEN a video contains embedded subtitles, THE Subtitle_Processor SHALL extract the subtitle tracks automatically
-3. WHEN a user uploads an external subtitle file (SRT, VTT), THE Subtitle_Processor SHALL parse and associate it with the video
-4. IF a video has no subtitles, THEN THE Video_Translation_System SHALL offer the user one of two options:
-   - Upload an external subtitle file (SRT/VTT), OR
-   - Request automated speech-to-text (ASR) processing (with a user-visible warning: "ASR may increase processing time and reduce transcription accuracy")
-5. WHEN subtitle extraction is complete, THE Video_Translation_System SHALL display the original subtitle content for user verification
-
-### Requirement 2: Multi-Language Translation
-
-**User Story:** As a viewer, I want subtitles translated into my preferred language, so that I can understand video content in languages I don't speak.
+**User Story:** As a user, I want to upload a video file with subtitles, so that I can prepare it for translation into other languages.
 
 #### Acceptance Criteria
 
-1. WHEN subtitles are processed, THE Translation_Engine SHALL support translation into at least 5 major Indian languages (Hindi, Tamil, Telugu, Bengali, Malayalam) plus English as default
-2. WHEN a user selects a target language, THE Translation_Engine SHALL translate all subtitle segments while preserving timing information
-3. WHEN translation is complete, THE Video_Translation_System SHALL maintain the original subtitle timing and formatting
-4. IF translation fails for any segment, THEN THE Video_Translation_System SHALL display the original text and log the error
-5. WHEN displaying translated subtitles, THE Video_Translation_System SHALL preserve line breaks and basic formatting
+1. WHEN a user uploads a video file, THE Video_Translation_System SHALL accept common video formats (MP4, MKV, AVI, MOV, WebM)
+2. WHEN a user uploads a video with embedded subtitles, THE Subtitle_Extractor SHALL detect and extract all available subtitle tracks
+3. WHEN a user uploads an external subtitle file (SRT or VTT), THE Subtitle_Extractor SHALL parse and validate the subtitle format
+4. WHEN a video file exceeds 500MB, THE Video_Translation_System SHALL reject the upload and display a size limit message
+5. IF subtitle extraction fails, THEN THE Video_Translation_System SHALL notify the user with a descriptive error message
+6. WHEN a video is successfully uploaded, THE Video_Translation_System SHALL display the detected source language and subtitle count
+
+### Requirement 2: Subtitle Translation
+
+**User Story:** As a user, I want to translate video subtitles into multiple languages, so that I can make content accessible to international audiences.
+
+#### Acceptance Criteria
+
+1. WHEN a user selects a target language, THE Translation_Engine SHALL translate all subtitle entries from the source language to the target language
+2. THE Translation_Engine SHALL preserve subtitle timing information during translation
+3. WHEN translation is in progress, THE Video_Translation_System SHALL display a progress indicator showing percentage completion
+4. WHEN translation completes, THE Video_Translation_System SHALL store the translated subtitle track with language metadata
+5. THE Video_Translation_System SHALL support translation into at least 10 major languages (English, Spanish, French, German, Chinese, Japanese, Arabic, Hindi, Portuguese, Russian)
+6. IF translation fails for any subtitle entry, THEN THE Video_Translation_System SHALL log the error and continue with remaining entries
 
 ### Requirement 3: Text-to-Speech Audio Generation
 
-**User Story:** As a user with visual impairments, I want translated audio narration, so that I can listen to content in my preferred language without reading subtitles.
+**User Story:** As a user, I want to generate synchronized audio for translated subtitles, so that viewers can listen to the video in their preferred language.
 
 #### Acceptance Criteria
 
-1. WHERE audio generation is enabled, THE TTS_Generator SHALL convert translated subtitles into speech audio
-2. WHEN generating speech, THE TTS_Generator SHALL synchronize audio timing with original subtitle timestamps
-3. WHEN audio generation is complete, THE Video_Translation_System SHALL provide audio tracks for each translated language
-4. IF TTS generation fails, THEN THE Video_Translation_System SHALL continue with subtitle-only translation
-5. WHEN playing generated audio, THE Media_Player SHALL allow users to adjust audio volume independently from video audio
+1. WHERE audio generation is enabled, THE TTS_Generator SHALL convert translated subtitle text into speech audio
+2. WHEN generating audio, THE TTS_Generator SHALL use voice characteristics appropriate for the target language
+3. THE Audio_Synchronizer SHALL align generated audio segments with original subtitle timestamps
+4. WHEN audio generation is in progress, THE Video_Translation_System SHALL display a progress indicator
+5. IF generated audio duration exceeds the subtitle display duration, THEN THE Audio_Synchronizer SHALL adjust playback speed to fit within timing constraints
+6. THE Video_Translation_System SHALL allow users to preview generated audio before finalizing
 
 ### Requirement 4: Multi-Language Video Playback
 
-**User Story:** As a viewer, I want to watch videos with translated subtitles and audio, so that I can enjoy content in my preferred language.
+**User Story:** As a user, I want to play the same video with different language options, so that I can verify translations and provide localized content.
 
 #### Acceptance Criteria
 
-1. WHEN a video is processed, THE Media_Player SHALL display language selection options for available translations
-2. WHEN a user selects a language, THE Media_Player SHALL display subtitles in the chosen language synchronized with video playback
-3. WHERE TTS audio is available, THE Media_Player SHALL play the corresponding audio track when selected
-4. WHEN switching languages during playback, THE Media_Player SHALL maintain current playback position and seamlessly switch content
-5. WHEN displaying subtitles, THE Media_Player SHALL ensure text is readable with appropriate contrast and positioning
+1. WHEN a user selects a language option, THE Video_Player SHALL display the corresponding subtitle track
+2. WHERE audio has been generated for a language, THE Video_Player SHALL play the synchronized audio track
+3. THE Video_Player SHALL allow users to switch between languages during playback without restarting the video
+4. WHEN switching languages, THE Video_Player SHALL maintain the current playback position
+5. THE Video_Player SHALL display available language options in a clear dropdown or menu interface
+6. WHILE a video is playing, THE Video_Player SHALL synchronize subtitles with video timestamps within 100 milliseconds accuracy
 
-### Requirement 5: Processing Status and Progress
+### Requirement 5: Subtitle Export
 
-**User Story:** As a user, I want to see processing progress, so that I know when my video translation will be ready.
-
-#### Acceptance Criteria
-
-1. WHEN video processing begins, THE Video_Translation_System SHALL display a progress indicator showing current processing stage
-2. WHEN each translation completes, THE Video_Translation_System SHALL update progress to reflect completion status
-3. IF processing is expected to take longer than 30 seconds, THEN THE Video_Translation_System SHALL display a progress indicator plus an estimated remaining time, updated in real time
-4. WHEN all processing is complete, THE Video_Translation_System SHALL notify the user and enable playback
-5. IF any processing step fails, THEN THE Video_Translation_System SHALL display specific error information and suggested actions
-
-### Requirement 6: File Format and Size Management
-
-**User Story:** As a user, I want reasonable file size limits and format support, so that I can use the system effectively within hackathon constraints.
+**User Story:** As a user, I want to download translated subtitles in standard formats, so that I can use them with other video players or editing tools.
 
 #### Acceptance Criteria
 
-1. WHEN uploading videos, THE Video_Translation_System SHALL enforce a maximum file size of 100MB (These are hackathon-MVP defaults and are configurable for production)
-2. WHEN processing videos longer than 10 minutes, THE Video_Translation_System SHALL warn users about extended processing time (These are hackathon-MVP defaults and are configurable for production)
-3. WHEN subtitle files are uploaded, THE Subtitle_Processor SHALL validate file format and encoding
-4. IF uploaded files exceed limits, THEN THE Video_Translation_System SHALL display clear error messages with size requirements
-5. WHEN storing processed content, THE Video_Translation_System SHALL implement temporary storage with automatic cleanup after 24 hours
+1. WHEN a user requests subtitle export, THE Video_Translation_System SHALL generate subtitle files in SRT format
+2. THE Video_Translation_System SHALL generate subtitle files in VTT format
+3. WHEN exporting subtitles, THE Video_Translation_System SHALL preserve all timing information accurately
+4. THE Video_Translation_System SHALL include language metadata in exported subtitle file names
+5. WHEN a user downloads subtitles, THE Video_Translation_System SHALL provide files with UTF-8 encoding to support international characters
+
+### Requirement 6: Translation Quality and Context
+
+**User Story:** As a user, I want accurate and contextually appropriate translations, so that the translated content maintains the original meaning and tone.
+
+#### Acceptance Criteria
+
+1. THE Translation_Engine SHALL maintain context across consecutive subtitle entries during translation
+2. WHEN translating technical or domain-specific content, THE Translation_Engine SHALL preserve specialized terminology
+3. THE Translation_Engine SHALL respect character limits appropriate for subtitle display (typically 42 characters per line)
+4. IF a translated subtitle exceeds display length limits, THEN THE Video_Translation_System SHALL split it across multiple subtitle entries while preserving timing
+5. THE Translation_Engine SHALL preserve formatting markers (italics, bold) present in source subtitles
 
 ### Requirement 7: User Interface and Experience
 
-**User Story:** As a user, I want an intuitive interface, so that I can easily translate and view videos without technical expertise.
+**User Story:** As a user, I want an intuitive web interface, so that I can easily navigate the translation workflow without technical expertise.
 
 #### Acceptance Criteria
 
-1. WHEN users visit the application, THE Video_Translation_System SHALL display a clear upload interface with drag-and-drop functionality
-2. WHEN videos are processing, THE Video_Translation_System SHALL provide clear visual feedback and disable conflicting actions
-3. WHEN translation options are available, THE Video_Translation_System SHALL present language choices with recognizable flags or names
-4. WHEN errors occur, THE Video_Translation_System SHALL display user-friendly error messages with actionable guidance
-5. WHEN the application loads, THE Video_Translation_System SHALL be responsive and functional within 3 seconds
+1. WHEN a user visits the application, THE Video_Translation_System SHALL display a clear upload interface with drag-and-drop support
+2. THE Video_Translation_System SHALL provide visual feedback for all long-running operations (upload, translation, audio generation)
+3. WHEN errors occur, THE Video_Translation_System SHALL display user-friendly error messages with suggested actions
+4. THE Video_Translation_System SHALL organize the workflow into clear steps: Upload, Translate, Generate Audio, Preview, Export
+5. THE Video_Translation_System SHALL be responsive and functional on desktop browsers (Chrome, Firefox, Safari, Edge)
 
-### Requirement 8: Data Privacy and Security
+### Requirement 8: Performance and Processing
 
-**User Story:** As a user, I want my uploaded content to be handled securely, so that my videos and data remain private.
+**User Story:** As a user, I want reasonable processing times for translation and audio generation, so that I can complete projects efficiently during a hackathon timeframe.
 
 #### Acceptance Criteria
 
-1. WHEN videos are uploaded, THE Video_Translation_System SHALL process files without permanent storage beyond the session
-2. WHEN processing is complete, THE Video_Translation_System SHALL automatically delete uploaded files after 24 hours
-3. WHEN using external AI services, THE Video_Translation_System SHALL not store user content on third-party servers permanently
-4. IF users close the browser, THEN THE Video_Translation_System SHALL clean up associated temporary files
-5. WHEN handling subtitle content, THE Video_Translation_System SHALL not log or store subtitle text beyond processing requirements
-6. THE Video_Translation_System SHALL obtain explicit user consent before sending subtitle text to any third-party AI services and SHALL display which provider(s) will process the data
-7. All API calls to third-party services SHALL use TLS. Any temporary server-side storage SHALL be encrypted at rest
+1. WHEN translating subtitles, THE Translation_Engine SHALL process at least 100 subtitle entries per minute
+2. WHEN generating audio, THE TTS_Generator SHALL process at least 50 subtitle entries per minute
+3. THE Video_Translation_System SHALL support concurrent processing of multiple translation requests
+4. WHEN system resources are constrained, THE Video_Translation_System SHALL queue requests and notify users of estimated wait times
+5. THE Video_Translation_System SHALL cache translation results to avoid redundant processing of identical content
+
+### Requirement 9: Data Privacy and Storage
+
+**User Story:** As a user, I want my uploaded videos and translations to be handled securely, so that my content remains private and protected.
+
+#### Acceptance Criteria
+
+1. WHEN a user uploads a video, THE Video_Translation_System SHALL store files with unique identifiers to prevent unauthorized access
+2. THE Video_Translation_System SHALL automatically delete uploaded videos and generated content after 24 hours
+3. THE Video_Translation_System SHALL not share user content with third parties without explicit consent
+4. WHEN a user closes their session, THE Video_Translation_System SHALL provide an option to immediately delete all associated data
+5. THE Video_Translation_System SHALL transmit all data over HTTPS connections
+
+### Requirement 10: Error Handling and Recovery
+
+**User Story:** As a user, I want the system to handle errors gracefully, so that I can understand what went wrong and how to proceed.
+
+#### Acceptance Criteria
+
+1. IF video upload fails, THEN THE Video_Translation_System SHALL display the specific error reason (network, format, size) and allow retry
+2. IF subtitle extraction fails, THEN THE Video_Translation_System SHALL suggest uploading an external subtitle file
+3. IF translation API is unavailable, THEN THE Video_Translation_System SHALL notify the user and queue the request for retry
+4. IF audio generation fails, THEN THE Video_Translation_System SHALL allow the user to proceed with subtitle-only translation
+5. THE Video_Translation_System SHALL log all errors with timestamps for debugging purposes
