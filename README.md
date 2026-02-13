@@ -181,9 +181,6 @@ git push origin feature/your-feature
 # Open a Pull Request
 ```
 
-## License
-
-MIT License - see LICENSE file for details
 
 ## Acknowledgments
 
